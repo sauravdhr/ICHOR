@@ -5,3 +5,5 @@ tmp2.py
 tmp.py
 untitled4.m
 *eps
+__pycache__/*
+*bak

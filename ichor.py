@@ -52,22 +52,20 @@ def pre_align(f1,f2): #align with mafft and tempfiles
         except:
             print('Invalid file. Check -s argument if in csv mode')
             return 0
-    
-    with NamedTemporaryFile(delete=False) as aligned:
-        alignname=aligned.name
-        subprocess.check_call(['mafft', '--quiet', '--auto', '--thread', '20', '--preservecase', catname], stdout=aligned) 
+    os.system('mafft --quiet --thread 20 --preservecase '+catname+' > tmp.fas')
     os.unlink(catname)
-    seqs=SeqIO.parse(alignname,'fasta')
+    seqs=SeqIO.parse('tmp.fas','fasta')
     seenSecond=False
     seqs1=[]
+    # print(count)
     c=0
     while not seenSecond:
         record=next(seqs)
-        c+=1
         if c==count:
             seenSecond=True
         else:
             seqs1.append(record)
+        c+=1
     
     with NamedTemporaryFile(mode='w', delete=False) as align1:
         SeqIO.write(seqs1,align1,'fasta')
@@ -85,7 +83,6 @@ def pre_align(f1,f2): #align with mafft and tempfiles
     with NamedTemporaryFile(mode='w', delete=False) as align2:
         SeqIO.write(seqs2,align2,'fasta')
         f2name=align2.name
-    os.unlink(alignname)    
     return(f1name,f2name)
 
 def parse_input(input): #get sequences from a file
@@ -616,10 +613,10 @@ def calc_centroids(nclust,filename):
     dict=parse_input(filename)
     seqs=list(dict.keys())
     freq=list(dict.values())
-    DM=calc_distance_matrix(seqs)
     nseq = len(seqs)
-    centroids = []
     if nseq>nclust:
+        centroids = []
+        DM=calc_distance_matrix(seqs)
         Z = fastcluster.linkage(DM,method='weighted')
         T = cluster(Z,nclust)
         for c in range(nclust):
